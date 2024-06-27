@@ -2,6 +2,7 @@ package com.xantrix.webapp.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -9,30 +10,37 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.User.UserBuilder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 @EnableWebSecurity
+@PropertySource("classpath:application-secret.yml")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 {
-	private static String REALM = "REAME";
-	
-	//private static final String[] USER_MATCHER = { "/utenti/cerca/**"};
+
+    //private static final String[] USER_MATCHER = { "/utenti/cerca/**"};
 	private static final String[] ADMIN_MATCHER = { "/utenti/inserisci/**", "/utenti/elimina/**" };
+
+	private final SecurityProperties securityProperties;
+
+	public SecurityConfiguration(SecurityProperties securityProperties) {
+		this.securityProperties = securityProperties;
+	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception
 	{
-			http.csrf().disable()
+        String REALM = "REAME";
+        http.csrf().disable()
 				.authorizeRequests()
 				//.antMatchers(USER_MATCHER).hasAnyRole("USER")
 				.antMatchers(ADMIN_MATCHER).hasAnyRole("ADMIN")
 				.anyRequest().authenticated()
 				.and()
-				.httpBasic().realmName(REALM).authenticationEntryPoint(getBasicAuthEntryPoint()).and()
+				.httpBasic().realmName( REALM ).authenticationEntryPoint(getBasicAuthEntryPoint()).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 	
@@ -44,7 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 
 	/* To allow Pre-flight [OPTIONS] request from browser */
 	@Override
-	public void configure(WebSecurity web) throws Exception
+	public void configure(WebSecurity web)
 	{
 		web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
 	}
@@ -53,25 +61,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 	public BCryptPasswordEncoder passwordEncoder()
 	{
 		return new BCryptPasswordEncoder();
-	};
+	}
 
 	@Bean
-	@Override
-	public UserDetailsService userDetailsService()
-	{
-		UserBuilder users = User.builder();
-
+	public UserDetailsService userDetailsService() {
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 
-		manager.createUser(users
-				.username("ReadUser")
-				.password(new BCryptPasswordEncoder().encode("123Stella"))
-				.roles("USER").build());
+		UserDetails readUser = User.builder()
+				.username(securityProperties.getRead().getUsername())
+				.password(new BCryptPasswordEncoder().encode(securityProperties.getRead().getPassword()))
+				.roles("USER")
+				.build();
 
-		manager.createUser(users
-				.username("WriteUser")
-				.password(new BCryptPasswordEncoder().encode("123Stella"))
-				.roles("USER", "ADMIN").build());
+		UserDetails writeUser = User.builder()
+				.username(securityProperties.getWrite().getUsername())
+				.password(new BCryptPasswordEncoder().encode(securityProperties.getWrite().getPassword()))
+				.roles("USER", "ADMIN")
+				.build();
+
+		manager.createUser(readUser);
+		manager.createUser(writeUser);
 
 		return manager;
 	}

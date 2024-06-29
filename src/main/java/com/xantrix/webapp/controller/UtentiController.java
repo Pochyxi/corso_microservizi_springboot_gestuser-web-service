@@ -7,6 +7,7 @@ import javax.validation.Valid;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpHeaders;
@@ -38,7 +39,6 @@ import lombok.extern.java.Log;
 @RestController
 @RequestMapping(value = "/api/utenti")
 @Log
-@RequiredArgsConstructor
 public class UtentiController
 {
 
@@ -47,6 +47,14 @@ public class UtentiController
 	private final BCryptPasswordEncoder passwordEncoder;
 
 	private final ResourceBundleMessageSource errMessage;
+
+	@Autowired
+	public UtentiController(UtentiService utentiService, BCryptPasswordEncoder passwordEncoder, ResourceBundleMessageSource errMessage)
+	{
+		this.utentiService = utentiService;
+		this.passwordEncoder = passwordEncoder;
+		this.errMessage = errMessage;
+	}
 	
 	@GetMapping(value = "/cerca/tutti")
 	public List<Utenti> getAllUser()

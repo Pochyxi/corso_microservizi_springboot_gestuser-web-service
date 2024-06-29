@@ -6,5 +6,5 @@ import com.xantrix.webapp.model.Utenti;
  
 public interface UtentiRepository extends MongoRepository<Utenti, String> 
 {
-	public Utenti findByUserId(String UserId);
+	Utenti findByUserId(String UserId);
 }

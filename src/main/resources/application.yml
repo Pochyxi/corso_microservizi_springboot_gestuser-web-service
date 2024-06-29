@@ -2,23 +2,29 @@
 #= GestUser Web Service - Versione Base
 #==========================================================
 
+# Configurazione del server
 server:
-  port: 8019
+  port: 8019  # Porta su cui il servizio sarà in ascolto
 
+# Configurazione dell'applicazione Spring
 spring:
   application:
-    name: GestUser
-#==========================================================
-#= PARAMETRI DB MONGODB 
-#==========================================================
+    name: GestUser  # Nome dell'applicazione
+
+  #==========================================================
+  #= PARAMETRI DB MONGODB
+  #==========================================================
+  # Configurazione del database MongoDB
   data:
     mongodb:
-      authentication-database: admin
-      database: ms-users
-      host: localhost
-      password: 123Stella
-      port: 37017
-      username: adiener
-      auto-index-creation: true
+      authentication-database: admin  # Database per l'autenticazione
+      database: ms-users  # Nome del database utilizzato dall'applicazione
+      host: localhost  # Indirizzo del server MongoDB
+      password: 123Stella  # Password per l'accesso al database (considerare l'uso di variabili d'ambiente per maggiore sicurezza)
+      port: 37017  # Porta del server MongoDB
+      username: adiener  # Username per l'accesso al database
+      auto-index-creation: true  # Abilita la creazione automatica degli indici
+
+  # Importazione di configurazioni aggiuntive
   config:
-    import: classpath:application-secret.yml
+    import: classpath:application-secret.yml  # Importa configurazioni sensibili da un file separato
